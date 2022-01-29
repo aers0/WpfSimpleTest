@@ -1,0 +1,22 @@
+﻿<Window x:Class="WpfSimpleTest.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfSimpleTest.ViewModels"
+        mc:Ignorable="d"
+        xmlns:views="clr-namespace:WpfSimpleTest.Views">
+    <Window.DataContext>
+        <local:MainWindowViewModel/>
+    </Window.DataContext>
+    <Grid>
+        <TabControl>
+            <TabItem Header="{StaticResource Tab_Chart}">
+                <views:Chart></views:Chart>
+            </TabItem>
+            <TabItem Header="{StaticResource Tab_Settings}">
+                <views:Settings></views:Settings>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
