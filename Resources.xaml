@@ -1,13 +1,19 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    
     <sys:String x:Key="Tab_Chart">Chart</sys:String>
     <sys:String x:Key="Tab_Settings">Settings</sys:String>
     <sys:String x:Key="Button_Start">Start</sys:String>
     <sys:String x:Key="Button_Stop">Stop</sys:String>
     <sys:String x:Key="Button_Save">Save</sys:String>
-    <sys:String x:Key="Button_Refresh">Refresh</sys:String>
     <sys:String x:Key="Label_FPS">FPS</sys:String>
     <sys:String x:Key="Label_BufferLength">Buffer Length</sys:String>
-    <sys:String x:Key="Label_DataPoints">Data Points</sys:String>
+    <sys:String x:Key="Label_PointsCount">Points Count</sys:String>
+    
+    <sys:String x:Key="Column_Id">Id</sys:String>
+    <sys:String x:Key="Column_Name">Name</sys:String>
+    <sys:String x:Key="Column_Value">Value</sys:String>
+    <sys:String x:Key="Column_DefValue">DefValue</sys:String>
+
 </ResourceDictionary>

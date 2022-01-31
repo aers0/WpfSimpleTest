@@ -10,7 +10,7 @@
         <local:MainWindowViewModel/>
     </Window.DataContext>
     <Grid>
-        <TabControl>
+        <TabControl SelectedIndex="{Binding SelectedTab}">
             <TabItem Header="{StaticResource Tab_Chart}">
                 <views:Chart></views:Chart>
             </TabItem>

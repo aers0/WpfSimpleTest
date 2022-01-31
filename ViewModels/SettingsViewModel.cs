@@ -1,17 +1,38 @@
-﻿using System.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.ObjectModel;
+using WpfSimpleTest.Helpers;
+using WpfSimpleTest.Models;
 
 namespace WpfSimpleTest.ViewModels
 {
-    class SettingsViewModel
+    class SettingsViewModel : BaseViewModel
     {
+        private readonly AppDbContext _Context = new AppDbContext();
+        public ObservableCollection<SettingsValue> Values { get; private set; }
 
-        private void CreateDataTable()
+        private RelayCommand _SaveCommand;
+        public RelayCommand SaveCommand
         {
-            System.Data.DataTable dt = new DataTable("MyTable");
-            dt.Columns.Add("MyColumn", typeof(string));
-            dt.Rows.Add("row of data");
+            get
+            {
+                return _SaveCommand ??
+                  (_SaveCommand = new RelayCommand(obj => {
+
+                      _Context.SaveChanges();
+                  }));
+            }
         }
 
+        public SettingsViewModel()
+        {
+            _Context.Database.EnsureCreated();
+            _Context.SettingsValue.Load();
+
+            Values =_Context.SettingsValue.Local.ToObservableCollection();
+
+        }
 
     }
+
+
 }

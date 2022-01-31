@@ -1,11 +1,13 @@
 ﻿using System.Windows;
+using WpfSimpleTest.ViewModels;
 
 namespace WpfSimpleTest.Views
 {
-    public partial class MainWindow : Window
+    partial class MainWindow : Window
     {
        public MainWindow()
         {
+            DataContext = new MainWindowViewModel();
         }
     }
 }

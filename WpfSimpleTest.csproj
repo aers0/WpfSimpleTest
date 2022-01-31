@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="4.6.97" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.22" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageReference Include="SciChart" Version="6.5.0.13720" />
   </ItemGroup>

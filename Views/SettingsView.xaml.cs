@@ -1,15 +1,14 @@
 ﻿using System.Windows.Controls;
+using WpfSimpleTest.ViewModels;
 
 namespace WpfSimpleTest.Views
 {
-    /// <summary>
-    /// Interaction logic for Settings.xaml
-    /// </summary>
-    public partial class Settings : UserControl
+    partial class Settings : UserControl
     {
         public Settings()
         {
             InitializeComponent();
+            DataContext = new SettingsViewModel();
         }
     }
 }

@@ -2,6 +2,7 @@
 using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows.Media;
 using System.Windows.Threading;
 using WpfSimpleTest.Helpers;
@@ -10,178 +11,233 @@ namespace WpfSimpleTest.ViewModels
 {
     class ChartViewModel : BaseViewModel
     {
-
         #region Properties
-        private double _Interval = 33;
+        private double interval = 33;
 
         public double Interval
         {
-            get { return _Interval; }
+            get { return interval; }
             set
             {
-                _Interval = value;
+                interval = value;
                 OnPropertyChanged("Interval");
             }
         }
 
-        private int _BufferLength = 5;
+        private int bufferLength = 5;
 
         public int BufferLength
         {
-            get { return _BufferLength; }
+            get { return bufferLength; }
             set
             {
-                _BufferLength = value;
+                bufferLength = value;
                 OnPropertyChanged("BufferLength");
             }
         }
 
-        private int _DataPoints = 4096;
+        private int pointsCount = 4096;
 
-        public int DataPoints
+        public int PointsCount
         {
-            get { return _DataPoints; }
+            get { return pointsCount; }
             set
             {
-                _DataPoints = value;
-                OnPropertyChanged("DataPoints");
+                pointsCount = value;
+                OnPropertyChanged("PointsCount");
             }
         }
 
-        private ObservableCollection<LineRenderableSeriesViewModel> _renderableSeries;
-        public ObservableCollection<LineRenderableSeriesViewModel> RenderableSeries
+        private int selectedTab;
+        public int SelectedTab
         {
-            get { return _renderableSeries; }
+            get { return selectedTab; }
             set
             {
-                _renderableSeries = value;
+                selectedTab = value;
+                if(SelectedTab != 0 )
+                {
+                    intervalTimer.Stop();
+                }
+                else
+                {
+                    if (isRunning)
+                        intervalTimer.Start();
+                }
+            }
+        }
+
+        private ObservableCollection<LineRenderableSeriesViewModel> renderableSeries;
+        public ObservableCollection<LineRenderableSeriesViewModel> RenderableSeries
+        {
+            get { return renderableSeries; }
+            set
+            {
+                renderableSeries = value;
                 OnPropertyChanged("RenderableSeries");
             }
         }
-
-        #endregion
+        #endregion Properties
 
         #region Commands 
 
-        private RelayCommand _StartCommand;
+        private RelayCommand startCommand;
         public RelayCommand StartCommand
         {
             get
             {
-                return _StartCommand ??
-                  (_StartCommand = new RelayCommand(obj => Start()));
+                return startCommand ??
+                  (startCommand = new RelayCommand(obj => {
+
+                      intervalTimer.Start();
+                      isRunning = true;
+                  }));
             }
         }
 
-        private RelayCommand _StopCommand;
+        private RelayCommand stopCommand;
         public RelayCommand StopCommand
         {
             get
             {
-                return _StopCommand ??
-                  (_StopCommand = new RelayCommand(obj => Stop()));
+                return stopCommand ??
+                  (stopCommand = new RelayCommand(obj => {
+                      intervalTimer.Stop();
+                      isRunning = false;
+                  }));
             }
         }
 
-        private RelayCommand _ChangeIntervalCommand;
+        private RelayCommand changeIntervalCommand;
         public RelayCommand ChangeIntervalCommand
         {
             get
             {
-                return _ChangeIntervalCommand ??
-                  (_ChangeIntervalCommand = new RelayCommand(obj => ChangeInterval()));
+                return changeIntervalCommand ??
+                  (changeIntervalCommand = new RelayCommand(obj => intervalTimer.Interval = new TimeSpan(0, 0, 0, 0, (int)Interval)));
             }
         }
 
-        private RelayCommand _ChangeBufferCommand;
-        public RelayCommand ChangeBufferCommand
+        private RelayCommand updateChartCommand;
+        public RelayCommand UpdateChartCommand
         {
             get
             {
-                return _ChangeBufferCommand ??
-                  (_ChangeBufferCommand = new RelayCommand(obj => ChangeBuffer()));
+                return updateChartCommand ??
+                  (updateChartCommand = new RelayCommand(obj => {
+                      InitData();
+                  }));
             }
         }
+        #endregion Commands
 
-        #endregion
+        private readonly DispatcherTimer intervalTimer;
+        private double frequency = -0.1;
+        private int offset;
+        private double[] opacities;
 
-        private readonly DispatcherTimer IntervalTimer;
-        private double Frequency = -0.1;
+        private bool isRunning;
 
         public ChartViewModel()
         {
-           RenderableSeries = new ObservableCollection<LineRenderableSeriesViewModel>();
-           IntervalTimer = new DispatcherTimer
+            Mediator.Instance.Register(o => { SelectedTab = (int) o; }, ViewModelMessages.SelectedTab);
+
+            RenderableSeries = new ObservableCollection<LineRenderableSeriesViewModel>();
+
+            intervalTimer = new DispatcherTimer
             {
                 Interval = new TimeSpan(0, 0, 0, 0, (int)Interval)
             };
-           IntervalTimer.Tick += OnNewData;
+
+           intervalTimer.Tick += OnNewData;
+
+           InitData();
+        }
+
+        private void InitData()
+        {
+            RenderableSeries.Clear();
+            offset = 0;
+
+            for (int i = 0; i < BufferLength; i++)
+            {
+                RenderableSeries.Add(new LineRenderableSeriesViewModel()
+                {
+                    StrokeThickness = 2,
+                    Stroke = Colors.DarkRed,
+                    Opacity = 0
+                }) ;
+            }
+            opacities = GetLinspace(0.1, 1, RenderableSeries.Count);
+
+            FirstTick();
+        }
+
+        private void FirstTick()
+        {
+            for (int i = 0; i < RenderableSeries.Count; i++)
+            {
+                XyDataSeries<double, double> lineData = new XyDataSeries<double, double>(PointsCount);
+                for (int ii = 0; ii < PointsCount; ii++)
+                {
+                    lineData.Append(ii, 100 * Math.Sin(ii * 0.002 + frequency) * 1);
+                }
+
+                RenderableSeries[i].DataSeries = lineData;
+            }
         }
 
         private void OnNewData(object sender, EventArgs e)
         {
-            AddSeries();
+            UpdateSeries();
             UpdateOpacity();
+            UpdateOffset();
         }
 
-        private void AddSeries()
+        private void UpdateSeries()
         {
-            var sequnce = DataGenerator.GetSinwave(DataPoints, Frequency);
-            Frequency += 0.01;
-
-            var lineData = new XyDataSeries<double>();
-            for (int i = 0; i < sequnce.Length; i++)
+            using (RenderableSeries[offset].DataSeries.SuspendUpdates())
             {
-                lineData.Append(i, sequnce[i]);
+                double random = new Random().Next(140, 150);
+
+                for (int i = 0; i < RenderableSeries[offset].DataSeries.Count; i++)
+                {
+                    ((XyDataSeries<double, double>)RenderableSeries[offset].DataSeries).Update(i, random * Math.Sin(i * 0.002 + frequency) * 1);
+                }
             }
-
-            var series = new LineRenderableSeriesViewModel()
-            {
-                StrokeThickness = 2,
-                Stroke = Colors.DarkRed,
-                Opacity = 1,
-                DataSeries = lineData,
-            };
-
-            if (RenderableSeries.Count > BufferLength)
-                RenderableSeries.RemoveAt(RenderableSeries.Count - (1 + BufferLength));
-
-            RenderableSeries.Add(series);
-
+            frequency += 0.1;
         }
+
+        private void UpdateOffset()
+        {
+            offset++;
+            if(offset == RenderableSeries.Count)
+                offset = 0;
+        }
+
         private void UpdateOpacity()
         {
-            double[] opactities = DataGenerator.GetLinspace(0.1, 1, RenderableSeries.Count);
+            int o = offset;
 
-            for (int i = 0; i < RenderableSeries.Count - 1; i++)
+            for (int i = opacities.Length -1 ; i >= 0 ; i--)
             {
-                RenderableSeries[i].Opacity = opactities[i];
+                RenderableSeries[o].Opacity = opacities[i];
+
+                if (o == 0)
+                    o = RenderableSeries.Count;
+                o--;
             }
         }
 
-        private void ChangeInterval()
+        private double[] GetLinspace(double startval, double endval, int steps)
         {
-            IntervalTimer.Interval = new TimeSpan(0, 0, 0, 0,(int)Interval);
-        }
+            if (steps == 1)
+                return new double[] { 1 };
 
-        private void ChangeBuffer()
-        {
-            if (RenderableSeries.Count > BufferLength)
-
-                for (int i = 0; i < RenderableSeries.Count - 1; i++)
-                {
-                    RenderableSeries.RemoveAt(i);
-                }
-        }
-
-        public void Start()
-        {
-            IntervalTimer.Start();
-        }
-
-        public void Stop()
-        {
-            IntervalTimer.Stop();
+            double interval = endval / Math.Abs(endval) * Math.Abs(endval - startval) / (steps - 1);
+            double[] value = (from val in Enumerable.Range(0, steps)
+                              select startval + (val * interval)).ToArray();
+            return value;
         }
     }
 }

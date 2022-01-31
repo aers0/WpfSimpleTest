@@ -6,6 +6,29 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-            
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <WrapPanel Grid.Row="0">
+            <Button Content="{StaticResource Button_Save}" Command="{Binding SaveCommand}"></Button>
+        </WrapPanel>
+
+        <DataGrid Grid.Row="1" Width="Auto" CanUserAddRows="True" ItemsSource="{Binding Values}" AutoGenerateColumns="False">
+            <DataGrid.Resources>
+                <Style x:Key="WithMaxLength" TargetType="{x:Type TextBox}">
+                    <Setter Property="MaxLength" Value="250"/>
+                </Style>
+            </DataGrid.Resources>
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Id}" Header="{StaticResource Column_Id}" IsReadOnly="True" />
+                <DataGridTextColumn Binding="{Binding Name}" Header="{StaticResource Column_Name}" EditingElementStyle="{StaticResource WithMaxLength}"/>
+                <DataGridTextColumn Binding="{Binding Value}" Header="{StaticResource Column_Value}" EditingElementStyle="{StaticResource WithMaxLength}" />
+                <DataGridTextColumn Binding="{Binding DefValue}" Header="{StaticResource Column_DefValue}" EditingElementStyle="{StaticResource WithMaxLength}"/>
+            </DataGrid.Columns>
+
+        </DataGrid>
+
     </Grid>
 </UserControl>

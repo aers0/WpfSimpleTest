@@ -31,7 +31,7 @@
             </ToggleButton>
             
             <Label Content="{StaticResource Label_FPS}"/>
-            <xctk:IntegerUpDown Value="{Binding Interval, Converter={StaticResource IntervalToFrameConverter}}" Maximum="60" Minimum="1">
+            <xctk:IntegerUpDown Value="{Binding Interval, Converter={StaticResource IntervalToFrameConverter}}" Maximum="60" Minimum="1" AllowTextInput="False">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="ValueChanged">
                         <i:InvokeCommandAction Command="{Binding ChangeIntervalCommand}" />
@@ -40,19 +40,19 @@
             </xctk:IntegerUpDown>
             
             <Label Content="{StaticResource Label_BufferLength}"/>
-            <xctk:IntegerUpDown Value="{Binding BufferLength}">
+            <xctk:IntegerUpDown Value="{Binding BufferLength}" AllowTextInput="False">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="ValueChanged">
-                        <i:InvokeCommandAction Command="{Binding ChangeBufferCommand}" />
+                        <i:InvokeCommandAction Command="{Binding UpdateChartCommand}" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </xctk:IntegerUpDown>
 
-            <Label Content="{StaticResource Label_DataPoints}"/>
-            <xctk:IntegerUpDown Value="{Binding DataPoints}">
+            <Label Content="{StaticResource Label_PointsCount}"/>
+            <xctk:IntegerUpDown Value="{Binding PointsCount}" AllowTextInput="False"  Increment="100" >
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="ValueChanged">
-                        <i:InvokeCommandAction Command="{Binding ChangeBufferCommand}" />
+                        <i:InvokeCommandAction Command="{Binding UpdateChartCommand}" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </xctk:IntegerUpDown>
@@ -63,7 +63,7 @@
                 <s:NumericAxis AutoRange="Always" />
             </s:SciChartSurface.XAxis>
             <s:SciChartSurface.YAxis>
-                <s:NumericAxis AutoRange="Always" />
+                <s:NumericAxis VisibleRange="-200, 200"/>
             </s:SciChartSurface.YAxis>
         </s:SciChartSurface>
     </Grid>
